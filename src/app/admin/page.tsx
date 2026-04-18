@@ -37,10 +37,22 @@ export default async function AdminPage({ searchParams }: PageProps) {
       </div>
 
       {!passwordOk ? (
-        <p className="rounded-2xl border border-amber-100 bg-amber-50/90 px-4 py-3 text-sm text-amber-950">
-          環境変数 <code className="rounded bg-white/80 px-1">ADMIN_PASSWORD</code>{" "}
-          を設定すると、ここから一覧・編集・削除ができます。
-        </p>
+        <div className="space-y-3 rounded-2xl border border-amber-100 bg-amber-50/90 px-4 py-4 text-sm leading-relaxed text-amber-950">
+          <p className="font-semibold text-amber-950">
+            いまはログイン欄が出ません（本番にパスワードが未設定のため）
+          </p>
+          <p>
+            環境変数 <code className="rounded bg-white/80 px-1">ADMIN_PASSWORD</code>{" "}
+            がサーバーに入っていないと、管理用のログイン画面は表示されません。
+          </p>
+          <p className="text-[0.8125rem] text-amber-900/90">
+            <strong className="font-semibold">本番（Vercel）の場合:</strong> プロジェクトの{" "}
+            <strong className="font-semibold">Settings → Environment Variables</strong> に{" "}
+            <code className="rounded bg-white/80 px-1">ADMIN_PASSWORD</code> を追加し、値に好きな長めのパスワードを入れて保存 →{" "}
+            <strong className="font-semibold">Deployments</strong> から{" "}
+            <strong className="font-semibold">Redeploy</strong> してください（反映に必須です）。
+          </p>
+        </div>
       ) : null}
 
       {passwordOk && !isAdmin ? (
