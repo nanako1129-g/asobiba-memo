@@ -1,0 +1,31 @@
+============================================================
+demo-posts.csv — デモ投稿を一括で入れる（Supabase）
+============================================================
+
+■ 方法A: Table Editor（おすすめ・GUI）
+------------------------------------------------------------
+1. Supabase → Table Editor → posts を開く
+2. 「Insert」付近のメニューから「Import data from CSV」等を選ぶ
+   （UIの表記はバージョンで多少違います）
+3. このフォルダの demo-posts.csv をアップロード
+4. カラム名が一致しているか確認して Import
+
+※ id が既存の行とぶつかるとエラーになります。
+  その場合は CSV の id 列を消して UUID を自動採番させるか、
+  別のUUIDに置き換えてください。
+
+■ 方法B: 既存の seed.sql
+------------------------------------------------------------
+SQL Editor で seed.sql を実行すると、別UUIDの4件が入ります
+（on conflict で二重投入を避けます）。
+
+■ CSV の列（posts と対応）
+------------------------------------------------------------
+id, place_id, place_name, ward, age_group, play_tip, comment,
+address, image_url, nursing_room, diaper_change, stroller_ok, created_at
+
+ward はアプリの定数に合わせてください:
+世田谷区 / 渋谷区 / 杉並区 / 目黒区 / 港区 / 新宿区 / その他
+age_group: 0〜2歳 / 3〜4歳 / 5〜6歳
+bool列: true / false（小文字）
+created_at: ISO8601 例 2026-04-18T12:00:00+09:00
