@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { AiVisitSuggestions } from "@/components/ai-visit-suggestions";
 import { PostShareButton } from "@/components/post-share-button";
 import type { Post } from "@/types/post";
 
@@ -136,6 +137,20 @@ export function PostDetail({ post, mapsUrl, shareUrl }: Props) {
             <p className="text-sm text-app-muted">記載された設備はありません</p>
           )}
         </SectionCard>
+
+        <AiVisitSuggestions
+          request={{
+            placeName: post.place_name,
+            ward: post.ward,
+            ageGroup: post.age_group,
+            playTip: post.play_tip,
+            comment: post.comment,
+            address: post.address,
+            nursingRoom: post.nursing_room,
+            diaperChange: post.diaper_change,
+            strollerOk: post.stroller_ok,
+          }}
+        />
 
         <SectionCard title="場所">
           <p className="mb-5 text-sm leading-relaxed text-app-muted">{post.address}</p>

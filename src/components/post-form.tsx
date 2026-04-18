@@ -10,6 +10,8 @@ import { AGE_GROUPS, WARDS } from "@/lib/constants";
 const fieldBase =
   "w-full rounded-2xl border-0 bg-white px-4 py-3.5 text-[0.9375rem] text-app-text shadow-[0_2px_12px_-2px_rgba(47,47,47,0.08)] placeholder:text-app-muted focus:outline-none focus:ring-2 focus:ring-app-primary/25";
 
+const AI_GENERATION_ERROR = "提案の生成に失敗しました。もう一度お試しください。";
+
 type ChipProps = {
   name: string;
   checked: boolean;
@@ -58,6 +60,46 @@ export function PostForm() {
   const [strollerOk, setStrollerOk] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [aiDraftLoading, setAiDraftLoading] = useState(false);
+  const [aiDraftError, setAiDraftError] = useState<string | null>(null);
+
+  const onAiPlayTipDraft = useCallback(async () => {
+    setAiDraftError(null);
+    setAiDraftLoading(true);
+    try {
+      const res = await fetch("/api/ai/play-tip-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          placeName,
+          ward,
+          ageGroup,
+          comment,
+          nursingRoom,
+          diaperChange,
+          strollerOk,
+        }),
+      });
+      if (!res.ok) {
+        setAiDraftError(AI_GENERATION_ERROR);
+        return;
+      }
+      const data = (await res.json()) as { playTipDraft?: string };
+      const draft = typeof data.playTipDraft === "string" ? data.playTipDraft.trim() : "";
+      if (!draft) {
+        setAiDraftError(AI_GENERATION_ERROR);
+        return;
+      }
+      setPlayTip((prev) => {
+        const t = prev.trim();
+        return t ? `${t}\n\n${draft}` : draft;
+      });
+    } catch {
+      setAiDraftError(AI_GENERATION_ERROR);
+    } finally {
+      setAiDraftLoading(false);
+    }
+  }, [placeName, ward, ageGroup, comment, nursingRoom, diaperChange, strollerOk]);
 
   const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -265,6 +307,36 @@ export function PostForm() {
           </FacilityChip>
         </div>
       </fieldset>
+
+      <div className="rounded-2xl border border-app-primary/15 bg-app-bg-sub/80 px-4 py-4 ring-1 ring-app-text/[0.04]">
+        <p className="mb-3 text-sm font-bold text-app-text">おすすめの遊び方（AI下書き）</p>
+        <button
+          type="button"
+          onClick={onAiPlayTipDraft}
+          disabled={aiDraftLoading || isSubmitting}
+          className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-2xl border border-app-primary/20 bg-white px-4 py-2.5 text-sm font-bold text-app-primary shadow-sm transition hover:bg-app-bg-sub disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+        >
+          {aiDraftLoading ? (
+            <>
+              <span
+                className="size-4 animate-spin rounded-full border-2 border-app-primary/30 border-t-app-primary"
+                aria-hidden
+              />
+              生成中…
+            </>
+          ) : (
+            <>✨ AIでおすすめの遊び方を作る</>
+          )}
+        </button>
+        <p className="mt-2 text-[0.6875rem] leading-relaxed text-app-muted">
+          年齢帯・設備・感想などをもとに、「おすすめの遊び方」欄へ下書きを入れます。すでに文字がある場合は末尾に追加されます。
+        </p>
+        {aiDraftError ? (
+          <p className="mt-2 text-sm leading-relaxed text-red-800" role="alert">
+            {aiDraftError}
+          </p>
+        ) : null}
+      </div>
 
       <button
         type="submit"
