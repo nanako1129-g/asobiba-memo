@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { AGE_GROUPS, WARDS } from "@/lib/constants";
+import { verifyAdminSession } from "@/lib/admin-session";
 import { isSupabaseConfigured } from "@/lib/supabase/is-configured";
 import { createSupabaseServiceClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -126,7 +128,9 @@ export async function createPost(formData: FormData): Promise<CreatePostResult> 
   return { ok: true, postId: inserted.id, editToken: String(inserted.edit_token) };
 }
 
-export async function updatePost(formData: FormData): Promise<UpdatePostResult> {
+type UpdateAuth = { kind: "token"; editToken: string } | { kind: "admin" };
+
+async function performPostUpdate(formData: FormData, auth: UpdateAuth): Promise<UpdatePostResult> {
   if (!isSupabaseConfigured()) {
     return { ok: false, error: "デモ表示モードでは編集できません。" };
   }
@@ -143,19 +147,28 @@ export async function updatePost(formData: FormData): Promise<UpdatePostResult> 
   }
 
   const postId = String(formData.get("postId") ?? "").trim();
-  const editToken = String(formData.get("editToken") ?? "").trim();
-  if (!UUID_RE.test(postId) || !UUID_RE.test(editToken)) {
-    return { ok: false, error: "編集用のリンクが無効です。" };
+  if (!UUID_RE.test(postId)) {
+    return {
+      ok: false,
+      error: auth.kind === "admin" ? "投稿の指定が不正です。" : "編集用のリンクが無効です。",
+    };
   }
 
-  const { data: row, error: selErr } = await admin
-    .from("posts")
-    .select("id, edit_token")
-    .eq("id", postId)
-    .maybeSingle();
+  if (auth.kind === "token") {
+    const { editToken } = auth;
+    if (!UUID_RE.test(editToken)) {
+      return { ok: false, error: "編集用のリンクが無効です。" };
+    }
 
-  if (selErr || !row || String(row.edit_token) !== editToken) {
-    return { ok: false, error: "編集用のリンクが無効か、期限切れの可能性があります。" };
+    const { data: row, error: selErr } = await admin
+      .from("posts")
+      .select("id, edit_token")
+      .eq("id", postId)
+      .maybeSingle();
+
+    if (selErr || !row || String(row.edit_token) !== editToken) {
+      return { ok: false, error: "編集用のリンクが無効か、期限切れの可能性があります。" };
+    }
   }
 
   const placeName = String(formData.get("placeName") ?? "").trim();
@@ -210,7 +223,7 @@ export async function updatePost(formData: FormData): Promise<UpdatePostResult> 
     imageUrl = pub.publicUrl;
   }
 
-  const { error: updateError } = await admin
+  let updateBuilder = admin
     .from("posts")
     .update({
       place_name: placeName,
@@ -224,8 +237,13 @@ export async function updatePost(formData: FormData): Promise<UpdatePostResult> 
       diaper_change: diaperChange,
       stroller_ok: strollerOk,
     })
-    .eq("id", postId)
-    .eq("edit_token", editToken);
+    .eq("id", postId);
+
+  if (auth.kind === "token") {
+    updateBuilder = updateBuilder.eq("edit_token", auth.editToken);
+  }
+
+  const { error: updateError } = await updateBuilder;
 
   if (updateError) {
     return { ok: false, error: `更新に失敗しました: ${updateError.message}` };
@@ -234,6 +252,56 @@ export async function updatePost(formData: FormData): Promise<UpdatePostResult> 
   revalidatePath("/");
   revalidatePath("/posts");
   revalidatePath(`/posts/${postId}`);
+  revalidatePath("/admin");
 
   return { ok: true };
+}
+
+export async function updatePost(formData: FormData): Promise<UpdatePostResult> {
+  const editToken = String(formData.get("editToken") ?? "").trim();
+  if (!UUID_RE.test(editToken)) {
+    return { ok: false, error: "編集用のリンクが無効です。" };
+  }
+  return performPostUpdate(formData, { kind: "token", editToken });
+}
+
+export async function updatePostAsAdmin(formData: FormData): Promise<UpdatePostResult> {
+  if (!(await verifyAdminSession())) {
+    return { ok: false, error: "管理者としてログインしてください。" };
+  }
+  return performPostUpdate(formData, { kind: "admin" });
+}
+
+export async function deletePostAsAdmin(formData: FormData): Promise<void> {
+  if (!(await verifyAdminSession())) {
+    redirect("/admin");
+  }
+  if (!isSupabaseConfigured()) {
+    redirect("/admin?del=demo");
+  }
+
+  let admin;
+  try {
+    admin = createSupabaseServiceClient();
+  } catch {
+    redirect("/admin?del=key");
+  }
+
+  const postId = String(formData.get("postId") ?? "").trim();
+  if (!UUID_RE.test(postId)) {
+    redirect("/admin?del=bad");
+  }
+
+  const { error } = await admin.from("posts").delete().eq("id", postId);
+
+  if (error) {
+    redirect("/admin?del=fail");
+  }
+
+  revalidatePath("/");
+  revalidatePath("/posts");
+  revalidatePath("/admin");
+  revalidatePath(`/posts/${postId}`);
+
+  redirect("/admin?del=ok");
 }

@@ -53,7 +53,7 @@ export default async function PostEditPage({ params, searchParams }: PageProps) 
         <p className="text-sm font-medium text-app-muted">{post.place_name}</p>
       </header>
 
-      <PostEditForm post={post} editToken={editToken} />
+      <PostEditForm mode="token" post={post} editToken={editToken} />
     </div>
   );
 }

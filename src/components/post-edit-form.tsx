@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { updatePost } from "@/app/actions/posts";
+import { updatePost, updatePostAsAdmin } from "@/app/actions/posts";
 import { AGE_GROUPS, WARDS } from "@/lib/constants";
 import type { Post } from "@/types/post";
 
@@ -45,12 +45,13 @@ function FacilityChip({ name, checked, onChange, children, icon }: ChipProps) {
   );
 }
 
-type Props = {
-  post: Post;
-  editToken: string;
-};
+type Props =
+  | { mode: "token"; post: Post; editToken: string }
+  | { mode: "admin"; post: Post };
 
-export function PostEditForm({ post, editToken }: Props) {
+export function PostEditForm(props: Props) {
+  const { post, mode } = props;
+  const editToken = mode === "token" ? props.editToken : "";
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +82,7 @@ export function PostEditForm({ post, editToken }: Props) {
 
     setIsSubmitting(true);
     try {
-      const result = await updatePost(fd);
+      const result = mode === "token" ? await updatePost(fd) : await updatePostAsAdmin(fd);
       if (!result.ok) {
         setError(result.error);
         return;
@@ -99,7 +100,7 @@ export function PostEditForm({ post, editToken }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-7">
       <input type="hidden" name="postId" value={post.id} />
-      <input type="hidden" name="editToken" value={editToken} />
+      {mode === "token" ? <input type="hidden" name="editToken" value={editToken} /> : null}
       <input type="hidden" name="existingImageUrl" value={post.image_url ?? ""} />
 
       {error && (
