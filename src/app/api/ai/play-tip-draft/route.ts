@@ -1,4 +1,6 @@
+import { buildDemoPlayTipDraft } from "@/lib/ai/demo-ai";
 import { openaiChatJson } from "@/lib/ai/openai-json";
+import { isOpenaiApiKeyConfigured } from "@/lib/ai/openai-configured";
 import { buildPlayTipDraftUserMessage, PLAY_TIP_DRAFT_SYSTEM } from "@/lib/ai/prompts";
 import type { PlayTipDraftRequest, PlayTipDraftResponse } from "@/lib/ai/types";
 
@@ -21,6 +23,12 @@ export async function POST(req: Request) {
     const body = (await req.json()) as unknown;
     if (!isDraftRequest(body)) {
       return Response.json({ error: "Invalid request body" }, { status: 400 });
+    }
+
+    if (!isOpenaiApiKeyConfigured()) {
+      const playTipDraft = buildDemoPlayTipDraft(body);
+      const out: PlayTipDraftResponse = { playTipDraft };
+      return Response.json({ ...out, demo: true });
     }
 
     const raw = await openaiChatJson<{ playTipDraft?: string }>(

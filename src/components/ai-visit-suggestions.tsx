@@ -13,9 +13,11 @@ export function AiVisitSuggestions({ request }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<VisitSuggestions | null>(null);
+  const [isDemo, setIsDemo] = useState(false);
 
   const onGenerate = useCallback(async () => {
     setError(null);
+    setIsDemo(false);
     setLoading(true);
     try {
       const res = await fetch("/api/ai/play-suggestions", {
@@ -27,8 +29,10 @@ export function AiVisitSuggestions({ request }: Props) {
         setError(AI_GENERATION_ERROR);
         return;
       }
-      const data = (await res.json()) as VisitSuggestions;
-      setResult(data);
+      const data = (await res.json()) as VisitSuggestions & { demo?: boolean };
+      const { demo, ...suggestions } = data;
+      setResult(suggestions);
+      setIsDemo(Boolean(demo));
     } catch {
       setError(AI_GENERATION_ERROR);
     } finally {
@@ -76,6 +80,13 @@ export function AiVisitSuggestions({ request }: Props) {
           role="alert"
         >
           {error}
+        </p>
+      ) : null}
+
+      {isDemo && result ? (
+        <p className="rounded-2xl border border-amber-100 bg-amber-50/90 px-4 py-2.5 text-xs leading-relaxed text-amber-950">
+          <strong className="font-semibold">デモ表示</strong>
+          です（OpenAI API 未設定のときのサンプル文面。キーを設定すると AI が生成します）。
         </p>
       ) : null}
 

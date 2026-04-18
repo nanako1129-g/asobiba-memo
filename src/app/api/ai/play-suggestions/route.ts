@@ -1,4 +1,6 @@
+import { buildDemoVisitSuggestions } from "@/lib/ai/demo-ai";
 import { openaiChatJson } from "@/lib/ai/openai-json";
+import { isOpenaiApiKeyConfigured } from "@/lib/ai/openai-configured";
 import { buildVisitSuggestionsUserMessage, VISIT_SUGGESTIONS_SYSTEM } from "@/lib/ai/prompts";
 import type { VisitSuggestions, VisitSuggestionsRequest } from "@/lib/ai/types";
 
@@ -34,6 +36,11 @@ export async function POST(req: Request) {
     const body = (await req.json()) as unknown;
     if (!isVisitRequest(body)) {
       return Response.json({ error: "Invalid request body" }, { status: 400 });
+    }
+
+    if (!isOpenaiApiKeyConfigured()) {
+      const suggestions = buildDemoVisitSuggestions(body);
+      return Response.json({ ...suggestions, demo: true });
     }
 
     const raw = await openaiChatJson<Record<string, unknown>>(

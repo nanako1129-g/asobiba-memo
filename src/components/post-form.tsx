@@ -62,9 +62,11 @@ export function PostForm() {
   const [error, setError] = useState<string | null>(null);
   const [aiDraftLoading, setAiDraftLoading] = useState(false);
   const [aiDraftError, setAiDraftError] = useState<string | null>(null);
+  const [aiDraftDemo, setAiDraftDemo] = useState(false);
 
   const onAiPlayTipDraft = useCallback(async () => {
     setAiDraftError(null);
+    setAiDraftDemo(false);
     setAiDraftLoading(true);
     try {
       const res = await fetch("/api/ai/play-tip-draft", {
@@ -84,12 +86,13 @@ export function PostForm() {
         setAiDraftError(AI_GENERATION_ERROR);
         return;
       }
-      const data = (await res.json()) as { playTipDraft?: string };
+      const data = (await res.json()) as { playTipDraft?: string; demo?: boolean };
       const draft = typeof data.playTipDraft === "string" ? data.playTipDraft.trim() : "";
       if (!draft) {
         setAiDraftError(AI_GENERATION_ERROR);
         return;
       }
+      setAiDraftDemo(Boolean(data.demo));
       setPlayTip((prev) => {
         const t = prev.trim();
         return t ? `${t}\n\n${draft}` : draft;
@@ -331,6 +334,12 @@ export function PostForm() {
         <p className="mt-2 text-[0.6875rem] leading-relaxed text-app-muted">
           年齢帯・設備・感想などをもとに、「おすすめの遊び方」欄へ下書きを入れます。すでに文字がある場合は末尾に追加されます。
         </p>
+        {aiDraftDemo ? (
+          <p className="mt-2 rounded-xl border border-amber-100 bg-amber-50/90 px-3 py-2 text-[0.6875rem] leading-relaxed text-amber-950">
+            <strong className="font-semibold">デモ表示</strong>
+            （API 未設定時のサンプル。OpenAI のキーを入れると AI が文を生成します）。
+          </p>
+        ) : null}
         {aiDraftError ? (
           <p className="mt-2 text-sm leading-relaxed text-red-800" role="alert">
             {aiDraftError}
