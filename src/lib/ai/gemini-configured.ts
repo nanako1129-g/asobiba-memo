@@ -3,5 +3,5 @@ export function isGeminiApiKeyConfigured(): boolean {
 }
 
 export function defaultGeminiModel(): string {
-  return process.env.GEMINI_MODEL?.trim() || "gemini-2.0-flash";
+  return process.env.GEMINI_MODEL?.trim() || "gemini-flash-lite-latest";
 }
