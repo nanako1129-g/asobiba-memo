@@ -114,7 +114,7 @@ export function HomeClient({ posts, demoMode = false, deploymentHint = "local" }
           室内あそび場メモ
         </h1>
         <p className="max-w-[22rem] text-[0.9375rem] leading-relaxed text-app-muted">
-          写真と短いメモから、子どもの年齢に合いそうな場所を素早く見つけられます。
+          室内で遊べる場所を見つけたら、投稿してみんなでシェアしよう🎵
         </p>
       </header>
 
