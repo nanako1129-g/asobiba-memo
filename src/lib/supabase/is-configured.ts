@@ -14,3 +14,8 @@ export function isSupabaseConfigured(): boolean {
   const key = getSupabasePublicApiKey();
   return Boolean(url && key);
 }
+
+/** Vercel 上のビルド・ランタイムか（環境変数はダッシュボードで設定する） */
+export function isVercelDeployment(): boolean {
+  return process.env.VERCEL === "1";
+}

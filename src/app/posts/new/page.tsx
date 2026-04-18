@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { PostForm } from "@/components/post-form";
-import { isSupabaseConfigured } from "@/lib/supabase/is-configured";
+import { isSupabaseConfigured, isVercelDeployment } from "@/lib/supabase/is-configured";
 
 function hostWithoutPort(raw: string) {
   return raw.split(":")[0] ?? raw;
@@ -16,6 +16,7 @@ export default async function NewPostPage() {
     host !== "127.0.0.1" &&
     /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/.test(host);
   const supabaseOk = isSupabaseConfigured();
+  const onVercel = isVercelDeployment();
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-lg flex-1 flex-col bg-app-bg px-4 py-6 pb-16">
@@ -32,11 +33,23 @@ export default async function NewPostPage() {
           className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950"
         >
           <p className="font-semibold">Supabase 未設定（サーバーから環境変数が見えていません）</p>
-          <p className="mt-1 text-[0.8125rem] text-amber-900/90">
-            プロジェクト直下の <code className="rounded bg-amber-100/90 px-1">.env.local</code> に URL
-            と API キーを保存し、このフォルダで{" "}
-            <code className="rounded bg-amber-100/90 px-1">npm run dev</code> を再起動してください。
-          </p>
+          {onVercel ? (
+            <p className="mt-1 text-[0.8125rem] text-amber-900/90">
+              Vercel では <code className="rounded bg-amber-100/90 px-1">.env.local</code> は使われません。
+              このプロジェクトの{" "}
+              <strong className="font-semibold">Settings → Environment Variables</strong> に、
+              <code className="rounded bg-amber-100/90 px-1">NEXT_PUBLIC_SUPABASE_URL</code> と API
+              キー（<code className="rounded bg-amber-100/90 px-1">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>{" "}
+              など）を追加し、<strong className="font-semibold">Deployments → Redeploy</strong>{" "}
+              してください。
+            </p>
+          ) : (
+            <p className="mt-1 text-[0.8125rem] text-amber-900/90">
+              プロジェクト直下の <code className="rounded bg-amber-100/90 px-1">.env.local</code> に URL
+              と API キーを保存し、このフォルダで{" "}
+              <code className="rounded bg-amber-100/90 px-1">npm run dev</code> を再起動してください。
+            </p>
+          )}
         </div>
       ) : null}
 

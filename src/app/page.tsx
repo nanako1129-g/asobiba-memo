@@ -4,13 +4,14 @@ import { HomeClient } from "@/components/home-client";
 import { HomeFallback } from "@/components/home-fallback";
 import { PostsLoadError } from "@/components/posts-load-error";
 import { listPosts } from "@/lib/posts/queries";
-import { isSupabaseConfigured } from "@/lib/supabase/is-configured";
+import { isSupabaseConfigured, isVercelDeployment } from "@/lib/supabase/is-configured";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   await connection();
   const demoMode = !isSupabaseConfigured();
+  const deploymentHint = isVercelDeployment() ? "vercel" : "local";
   let posts;
   try {
     posts = await listPosts();
@@ -21,7 +22,7 @@ export default async function HomePage() {
 
   return (
     <Suspense fallback={<HomeFallback />}>
-      <HomeClient posts={posts} demoMode={demoMode} />
+      <HomeClient posts={posts} demoMode={demoMode} deploymentHint={deploymentHint} />
     </Suspense>
   );
 }

@@ -11,9 +11,11 @@ type Props = {
   posts: Post[];
   /** Supabase 未設定のとき true（サンプルデータのみ） */
   demoMode?: boolean;
+  /** デモ時の案内文: Vercel では環境変数はダッシュボードで設定 */
+  deploymentHint?: "vercel" | "local";
 };
 
-export function HomeClient({ posts, demoMode = false }: Props) {
+export function HomeClient({ posts, demoMode = false, deploymentHint = "local" }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [ward, setWard] = useState("");
@@ -48,21 +50,38 @@ export function HomeClient({ posts, demoMode = false }: Props) {
         >
           <p className="font-semibold">デモ表示中</p>
           <p className="mt-1 text-[0.8125rem] text-amber-900/90">
-            サーバーが Supabase の環境変数を読めていないときに出ます。プロジェクト直下の{" "}
-            <code className="rounded bg-amber-100/80 px-1">.env.local</code> に URL とキーを保存し、
-            <code className="rounded bg-amber-100/80 px-1">npm run dev</code> をそのフォルダで再起動してください。
-            <span className="mt-2 block">
-              開発中は{" "}
-              <strong className="font-semibold">localhost:3000</strong> を開いていますか？（Vercel
-              など本番URLでは .env.local は効きません）
-            </span>
-            <span className="mt-2 block text-[0.75rem] text-amber-900/80">
-              切り分け:{" "}
-              <a href="/api/dev/supabase-check" className="font-semibold underline underline-offset-2">
-                /api/dev/supabase-check
-              </a>{" "}
-              を開き、<code className="rounded bg-amber-100/80 px-0.5">configured</code> が true になるか確認してください。
-            </span>
+            サーバーが Supabase の環境変数を読めていないときに出ます。
+            {deploymentHint === "vercel" ? (
+              <>
+                <span className="mt-2 block">
+                  いまは <strong className="font-semibold">Vercel 上</strong>のため、
+                  <code className="rounded bg-amber-100/80 px-1">.env.local</code> は使われません。ダッシュボードの{" "}
+                  <strong className="font-semibold">Settings → Environment Variables</strong> に URL
+                  と API キーを追加し、<strong className="font-semibold">Redeploy</strong> してください。
+                </span>
+              </>
+            ) : (
+              <>
+                プロジェクト直下の{" "}
+                <code className="rounded bg-amber-100/80 px-1">.env.local</code> に URL とキーを保存し、
+                <code className="rounded bg-amber-100/80 px-1">npm run dev</code> をそのフォルダで再起動してください。
+                <span className="mt-2 block">
+                  開発中は{" "}
+                  <strong className="font-semibold">localhost:3000</strong> を開いていますか？（Vercel
+                  の URL では .env.local は効きません）
+                </span>
+              </>
+            )}
+            {deploymentHint === "local" ? (
+              <span className="mt-2 block text-[0.75rem] text-amber-900/80">
+                切り分け:{" "}
+                <a href="/api/dev/supabase-check" className="font-semibold underline underline-offset-2">
+                  /api/dev/supabase-check
+                </a>{" "}
+                を開き、<code className="rounded bg-amber-100/80 px-0.5">configured</code> が true
+                になるか確認してください。
+              </span>
+            ) : null}
           </p>
         </div>
       )}
