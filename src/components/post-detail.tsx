@@ -170,6 +170,12 @@ export function PostDetail({ post, mapsUrl, shareUrl }: Props) {
           </a>
         </SectionCard>
 
+        <p className="rounded-2xl bg-app-bg-sub/90 px-4 py-3 text-center text-xs leading-relaxed text-app-muted ring-1 ring-app-text/[0.05]">
+          投稿の修正は、
+          <strong className="font-semibold text-app-text">作成直後に開いた「編集用ページ」のURL</strong>
+          から行えます。この画面だけでは編集リンクは出しません（URLを知っている人だけが編集できます）。
+        </p>
+
         <Link
           href="/posts/new"
           className="flex min-h-[48px] w-full items-center justify-center rounded-2xl border-2 border-dashed border-app-primary/30 bg-white py-3 text-sm font-bold text-app-primary transition hover:border-app-primary/45 hover:bg-app-bg-sub/50"

@@ -48,8 +48,11 @@ create table if not exists public.posts (
   nursing_room boolean not null default false,
   diaper_change boolean not null default false,
   stroller_ok boolean not null default false,
+  edit_token uuid not null default gen_random_uuid(),
   created_at timestamptz not null default now()
 );
+
+create unique index if not exists posts_edit_token_uidx on public.posts (edit_token);
 
 create index if not exists posts_created_at_idx on public.posts (created_at desc);
 create index if not exists posts_ward_idx on public.posts (ward);

@@ -14,6 +14,12 @@ demo-posts.csv — デモ投稿を一括で入れる（Supabase）
   その場合は CSV の id 列を消して UUID を自動採番させるか、
   別のUUIDに置き換えてください。
 
+■ 編集機能（アプリ）
+------------------------------------------------------------
+posts に edit_token 列が必要です。未実行なら SQL Editor で
+migrations/20260418_add_posts_edit_token.sql を実行してください。
+CSV に edit_token 列を含めない場合は、DBの default で自動付与されます。
+
 ■ 方法B: 既存の seed.sql
 ------------------------------------------------------------
 SQL Editor で seed.sql を実行すると、別UUIDの4件が入ります
