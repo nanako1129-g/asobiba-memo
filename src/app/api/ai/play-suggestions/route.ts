@@ -1,6 +1,6 @@
 import { buildDemoVisitSuggestions } from "@/lib/ai/demo-ai";
-import { openaiChatJson } from "@/lib/ai/openai-json";
-import { isOpenaiApiKeyConfigured } from "@/lib/ai/openai-configured";
+import { isGeminiApiKeyConfigured } from "@/lib/ai/gemini-configured";
+import { geminiGenerateJson } from "@/lib/ai/gemini-json";
 import { buildVisitSuggestionsUserMessage, VISIT_SUGGESTIONS_SYSTEM } from "@/lib/ai/prompts";
 import type { VisitSuggestions, VisitSuggestionsRequest } from "@/lib/ai/types";
 
@@ -38,17 +38,14 @@ export async function POST(req: Request) {
       return Response.json({ error: "Invalid request body" }, { status: 400 });
     }
 
-    if (!isOpenaiApiKeyConfigured()) {
+    if (!isGeminiApiKeyConfigured()) {
       const suggestions = buildDemoVisitSuggestions(body);
       return Response.json({ ...suggestions, demo: true });
     }
 
-    const raw = await openaiChatJson<Record<string, unknown>>(
-      [
-        { role: "system", content: VISIT_SUGGESTIONS_SYSTEM },
-        { role: "user", content: buildVisitSuggestionsUserMessage(body) },
-      ],
-      "gpt-4o-mini",
+    const raw = await geminiGenerateJson<Record<string, unknown>>(
+      VISIT_SUGGESTIONS_SYSTEM,
+      buildVisitSuggestionsUserMessage(body),
     );
 
     const suggestions = normalizeSuggestions(raw);

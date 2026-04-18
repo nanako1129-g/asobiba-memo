@@ -1,6 +1,6 @@
 import { buildDemoPlayTipDraft } from "@/lib/ai/demo-ai";
-import { openaiChatJson } from "@/lib/ai/openai-json";
-import { isOpenaiApiKeyConfigured } from "@/lib/ai/openai-configured";
+import { isGeminiApiKeyConfigured } from "@/lib/ai/gemini-configured";
+import { geminiGenerateJson } from "@/lib/ai/gemini-json";
 import { buildPlayTipDraftUserMessage, PLAY_TIP_DRAFT_SYSTEM } from "@/lib/ai/prompts";
 import type { PlayTipDraftRequest, PlayTipDraftResponse } from "@/lib/ai/types";
 
@@ -25,18 +25,15 @@ export async function POST(req: Request) {
       return Response.json({ error: "Invalid request body" }, { status: 400 });
     }
 
-    if (!isOpenaiApiKeyConfigured()) {
+    if (!isGeminiApiKeyConfigured()) {
       const playTipDraft = buildDemoPlayTipDraft(body);
       const out: PlayTipDraftResponse = { playTipDraft };
       return Response.json({ ...out, demo: true });
     }
 
-    const raw = await openaiChatJson<{ playTipDraft?: string }>(
-      [
-        { role: "system", content: PLAY_TIP_DRAFT_SYSTEM },
-        { role: "user", content: buildPlayTipDraftUserMessage(body) },
-      ],
-      "gpt-4o-mini",
+    const raw = await geminiGenerateJson<{ playTipDraft?: string }>(
+      PLAY_TIP_DRAFT_SYSTEM,
+      buildPlayTipDraftUserMessage(body),
     );
 
     const draft = typeof raw.playTipDraft === "string" ? raw.playTipDraft.trim() : "";

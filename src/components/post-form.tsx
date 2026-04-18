@@ -337,7 +337,7 @@ export function PostForm() {
         {aiDraftDemo ? (
           <p className="mt-2 rounded-xl border border-amber-100 bg-amber-50/90 px-3 py-2 text-[0.6875rem] leading-relaxed text-amber-950">
             <strong className="font-semibold">デモ表示</strong>
-            （API 未設定時のサンプル。OpenAI のキーを入れると AI が文を生成します）。
+            （API 未設定時のサンプル。Gemini のキーを入れると AI が文を生成します）。
           </p>
         ) : null}
         {aiDraftError ? (

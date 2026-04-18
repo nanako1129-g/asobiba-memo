@@ -86,7 +86,7 @@ export function AiVisitSuggestions({ request }: Props) {
       {isDemo && result ? (
         <p className="rounded-2xl border border-amber-100 bg-amber-50/90 px-4 py-2.5 text-xs leading-relaxed text-amber-950">
           <strong className="font-semibold">デモ表示</strong>
-          です（OpenAI API 未設定のときのサンプル文面。キーを設定すると AI が生成します）。
+          です（Gemini API 未設定のときのサンプル文面。キーを設定すると AI が生成します）。
         </p>
       ) : null}
 

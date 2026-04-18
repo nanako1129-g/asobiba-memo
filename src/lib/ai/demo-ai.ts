@@ -1,6 +1,6 @@
 import type { PlayTipDraftRequest, VisitSuggestions, VisitSuggestionsRequest } from "@/lib/ai/types";
 
-/** OPENAI_API_KEY 未設定時のサンプル（ハッカソン・デモ用） */
+/** GEMINI_API_KEY 未設定時のサンプル（ハッカソン・デモ用） */
 export function buildDemoVisitSuggestions(req: VisitSuggestionsRequest): VisitSuggestions {
   const place = req.placeName.trim() || "この施設";
   const ward = req.ward;
@@ -23,5 +23,5 @@ export function buildDemoPlayTipDraft(req: PlayTipDraftRequest): string {
   if (req.strollerOk) hints.push("ベビーカー置き場のルール（室内持ち込み可否など）を確認");
   const extra = hints.length ? `\n\n${hints.join("。")}。` : "";
 
-  return `【デモ下書き】${place}では、まず広さと人の流れに慣れてから遊ぶと安心です。${req.ageGroup}なら、段差の少ない遊びから始めると集中しやすいです。${extra}\n\n※本番では OpenAI 接続時に、入力内容に沿った文がここに入ります。`;
+  return `【デモ下書き】${place}では、まず広さと人の流れに慣れてから遊ぶと安心です。${req.ageGroup}なら、段差の少ない遊びから始めると集中しやすいです。${extra}\n\n※本番では Gemini 接続時に、入力内容に沿った文がここに入ります。`;
 }
